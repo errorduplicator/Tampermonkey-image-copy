@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Image List with Clipboard Copy
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Adds a button to list images and copy selected ones to clipboard
 // @author       Your Name
 // @match        *://*/*
@@ -11,14 +11,44 @@
 (function() {
     'use strict';
 
-    // Create and style the main button
-    const mainButton = document.createElement('button');
-    mainButton.textContent = 'Show Images';
-    mainButton.style.position = 'fixed';
-    mainButton.style.top = '10px';
-    mainButton.style.right = '10px';
-    mainButton.style.zIndex = '1000';
-    document.body.appendChild(mainButton);
+    // Function to create and style the main button
+    function createMainButton() {
+        if (!document.getElementById('mainButton')) {
+            const mainButton = document.createElement('button');
+            mainButton.id = 'mainButton';
+            mainButton.textContent = 'Show Images';
+            mainButton.style.position = 'fixed';
+            mainButton.style.top = '10px';
+            mainButton.style.right = '10px';
+            mainButton.style.zIndex = '1000';
+            document.body.appendChild(mainButton);
+
+            mainButton.addEventListener('click', () => {
+                sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+                if (sidebar.style.display === 'block') {
+                    listImages();
+                }
+            });
+        }
+    }
+
+    // Function to create and style the refresh button
+    function createRefreshButton() {
+        if (!document.getElementById('refreshButton')) {
+            const refreshButton = document.createElement('button');
+            refreshButton.id = 'refreshButton';
+            refreshButton.textContent = 'Refresh Script';
+            refreshButton.style.position = 'fixed';
+            refreshButton.style.top = '50px';
+            refreshButton.style.right = '10px';
+            refreshButton.style.zIndex = '1000';
+            document.body.appendChild(refreshButton);
+
+            refreshButton.addEventListener('click', () => {
+                createMainButton();
+            });
+        }
+    }
 
     // Create and style the sidebar
     const sidebar = document.createElement('div');
@@ -40,14 +70,6 @@
     copyButton.style.display = 'block';
     copyButton.style.margin = '10px';
     sidebar.appendChild(copyButton);
-
-    // Toggle sidebar visibility
-    mainButton.addEventListener('click', () => {
-        sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
-        if (sidebar.style.display === 'block') {
-            listImages();
-        }
-    });
 
     // List all images on the page in the sidebar
     function listImages() {
@@ -114,4 +136,8 @@
             alert('No images selected.');
         }
     });
+
+    // Initialize the buttons
+    createMainButton();
+    createRefreshButton();
 })();
