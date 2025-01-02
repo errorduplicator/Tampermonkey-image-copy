@@ -115,3 +115,30 @@
         }
     });
 })();
+
+function cleanup() {
+    // Remove existing containers
+    const existingContainers = sidebar.querySelectorAll('div');
+    existingContainers.forEach(container => container.remove());
+}
+
+function initializeScript() {
+    cleanup();
+    // Your existing initialization code here
+    images.forEach((img, index) => {
+        // ...existing container creation code...
+    });
+}
+
+// Add reload button
+const reloadButton = document.createElement('button');
+reloadButton.textContent = 'Reload Script';
+reloadButton.style.margin = '10px';
+sidebar.appendChild(reloadButton);
+
+reloadButton.addEventListener('click', () => {
+    initializeScript();
+});
+
+// Initial setup
+initializeScript();
