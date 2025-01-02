@@ -130,10 +130,36 @@
 
                     try {
                         document.execCommand('copy');
-                        alert('Selected images copied to clipboard!');
+                        const notification = document.createElement('div');
+                        notification.textContent = 'Selected images copied to clipboard!';
+                        notification.style.position = 'fixed';
+                        notification.style.bottom = '10px';
+                        notification.style.right = '10px';
+                        notification.style.backgroundColor = 'green';
+                        notification.style.color = 'white';
+                        notification.style.padding = '10px';
+                        notification.style.borderRadius = '5px';
+                        notification.style.zIndex = '10002';
+                        document.body.appendChild(notification);
+                        setTimeout(() => {
+                            document.body.removeChild(notification);
+                        }, 3000);
                     } catch (err) {
                         console.error('Failed to copy images: ', err);
-                        alert('Failed to copy images.');
+                        const notification = document.createElement('div');
+                        notification.textContent = 'Failed to copy images.';
+                        notification.style.position = 'fixed';
+                        notification.style.bottom = '10px';
+                        notification.style.right = '10px';
+                        notification.style.backgroundColor = 'red';
+                        notification.style.color = 'white';
+                        notification.style.padding = '10px';
+                        notification.style.borderRadius = '5px';
+                        notification.style.zIndex = '10002';
+                        document.body.appendChild(notification);
+                        setTimeout(() => {
+                            document.body.removeChild(notification);
+                        }, 3000);
                     }
 
                     document.body.removeChild(container);
