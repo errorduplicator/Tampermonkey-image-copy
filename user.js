@@ -17,7 +17,8 @@
         copyButton: null,
         initialized: false,
         retryCount: 0,
-        maxRetries: 5
+        maxRetries: 5,
+        isVisible: false
     };
 
     function createSidebar() {
@@ -25,7 +26,7 @@
             const sidebar = document.createElement('div');
             sidebar.id = 'image-copy-sidebar';
             sidebar.style.position = 'fixed';
-            sidebar.style.right = '0';
+            sidebar.style.right = '-200px'; // Start hidden
             sidebar.style.top = '0';
             sidebar.style.width = '200px';
             sidebar.style.height = '100%';
@@ -33,7 +34,23 @@
             sidebar.style.padding = '10px';
             sidebar.style.overflowY = 'auto';
             sidebar.style.zIndex = '10000';
+            sidebar.style.transition = 'right 0.3s ease-in-out';
             document.body.appendChild(sidebar);
+
+            // Create toggle button
+            const toggleButton = document.createElement('button');
+            toggleButton.textContent = '≡';
+            toggleButton.style.position = 'fixed';
+            toggleButton.style.right = '0';
+            toggleButton.style.top = '0';
+            toggleButton.style.zIndex = '10001';
+            toggleButton.style.padding = '5px 10px';
+            document.body.appendChild(toggleButton);
+
+            toggleButton.addEventListener('click', () => {
+                state.isVisible = !state.isVisible;
+                sidebar.style.right = state.isVisible ? '0' : '-200px';
+            });
             
             const copyButton = document.createElement('button');
             copyButton.textContent = 'Copy Selected';
