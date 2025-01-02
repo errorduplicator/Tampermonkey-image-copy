@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Image List with Clipboard Copy
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  Adds a button to list images and copy selected ones to clipboard
 // @author       Your Name
 // @match        *://*/*
