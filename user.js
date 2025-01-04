@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  Adds a button to list images and copy selected ones to clipboard
-// @author       Your Name
+// @author       errorduplicator
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
