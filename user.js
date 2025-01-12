@@ -18,8 +18,54 @@
         initialized: false,
         retryCount: 0,
         maxRetries: 5,
-        isVisible: false
+        isVisible: false,
+        observer: null,
+        throttleTimeout: null
     };
+
+    // Throttle function to limit execution
+    function throttle(func, limit) {
+        if (state.throttleTimeout) return;
+        state.throttleTimeout = setTimeout(() => {
+            func();
+            state.throttleTimeout = null;
+        }, limit);
+    }
+
+    // Modified observer setup
+    function setupObserver() {
+        if (state.observer) {
+            state.observer.disconnect();
+        }
+
+        state.observer = new MutationObserver((mutations) => {
+            throttle(() => {
+                if (!document.getElementById('image-copy-sidebar')) {
+                    state.initialized = false;
+                    initializeScript();
+                }
+            }, 1000);
+        });
+
+        // Observe only body with limited options
+        state.observer.observe(document.body, {
+            childList: true,
+            subtree: false
+        });
+    }
+
+    // Cleanup function
+    function cleanup() {
+        if (state.observer) {
+            state.observer.disconnect();
+        }
+        if (state.throttleTimeout) {
+            clearTimeout(state.throttleTimeout);
+        }
+    }
+
+    // Add cleanup on page unload
+    window.addEventListener('unload', cleanup);
 
     function createSidebar() {
         try {
@@ -69,23 +115,23 @@
         }
     }
 
-    function initializeScript() {
-        if (state.retryCount >= state.maxRetries) {
-            console.error('Max retries reached, stopping initialization');
-            return;
-        }
-
-        if (!document.getElementById('image-copy-sidebar')) {
-            const sidebar = createSidebar();
-            if (!sidebar) {
-                state.retryCount++;
-                setTimeout(initializeScript, 1000);
-                return;
-            }
-        }
+    function scanImages() {
+        if (!state.sidebar) return;
         
-        const images = document.getElementsByTagName('img');
-        Array.from(images).forEach((img, index) => {
+        // Clear existing image containers
+        const containers = state.sidebar.querySelectorAll('div');
+        containers.forEach(container => {
+            if (container !== state.copyButton) {
+                container.remove();
+            }
+        });
+
+        // Scan for images
+        const images = Array.from(document.getElementsByTagName('img'))
+            .filter(img => img.src && img.width > 10 && img.height > 10);
+
+        // Create containers for found images
+        images.forEach((img, index) => {
             const container = document.createElement('div');
             container.style.display = 'flex';
             container.style.alignItems = 'center';
@@ -102,89 +148,35 @@
             imageClone.style.marginLeft = '10px';
             container.appendChild(imageClone);
 
-            state.sidebar.insertBefore(container, state.copyButton);
+            state.sidebar.appendChild(container);
         });
 
-        if (state.copyButton) {
-            state.copyButton.addEventListener('click', () => {
-                const selectedImages = [];
-                const checkboxes = state.sidebar.querySelectorAll('input[type="checkbox"]:checked');
-                checkboxes.forEach(checkbox => {
-                    const img = checkbox.nextElementSibling;
-                    selectedImages.push(img);
-                });
-
-                if (selectedImages.length > 0) {
-                    const container = document.createElement('div');
-                    selectedImages.forEach(img => {
-                        const imgClone = img.cloneNode();
-                        container.appendChild(imgClone);
-                    });
-
-                    document.body.appendChild(container);
-                    const range = document.createRange();
-                    range.selectNodeContents(container);
-                    const selection = window.getSelection();
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-
-                    try {
-                        document.execCommand('copy');
-                        const notification = document.createElement('div');
-                        notification.textContent = 'Selected images copied to clipboard!';
-                        notification.style.position = 'fixed';
-                        notification.style.bottom = '10px';
-                        notification.style.right = '10px';
-                        notification.style.backgroundColor = 'green';
-                        notification.style.color = 'white';
-                        notification.style.padding = '10px';
-                        notification.style.borderRadius = '5px';
-                        notification.style.zIndex = '10002';
-                        document.body.appendChild(notification);
-                        setTimeout(() => {
-                            document.body.removeChild(notification);
-                        }, 3000);
-                    } catch (err) {
-                        console.error('Failed to copy images: ', err);
-                        const notification = document.createElement('div');
-                        notification.textContent = 'Failed to copy images.';
-                        notification.style.position = 'fixed';
-                        notification.style.bottom = '10px';
-                        notification.style.right = '10px';
-                        notification.style.backgroundColor = 'red';
-                        notification.style.color = 'white';
-                        notification.style.padding = '10px';
-                        notification.style.borderRadius = '5px';
-                        notification.style.zIndex = '10002';
-                        document.body.appendChild(notification);
-                        setTimeout(() => {
-                            document.body.removeChild(notification);
-                        }, 3000);
-                    }
-
-                    document.body.removeChild(container);
-                } else {
-                    alert('No images selected.');
-                }
-            });
-        }
+        console.log(`Found ${images.length} images`);
     }
 
-    // Create mutation observer
-    const observer = new MutationObserver((mutations) => {
-        if (!document.getElementById('image-copy-sidebar')) {
-            state.initialized = false;
-            state.retryCount = 0;
-            initializeScript();
-        }
-    });
+    function createRefreshButton() {
+        const refreshButton = document.createElement('button');
+        refreshButton.textContent = 'Refresh Images';
+        refreshButton.style.width = '100%';
+        refreshButton.style.margin = '10px 0';
+        refreshButton.addEventListener('click', scanImages);
+        state.sidebar.insertBefore(refreshButton, state.sidebar.firstChild);
+    }
 
-    // Start observing
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    function initializeScript() {
+        if (state.initialized) return;
+        
+        const sidebar = createSidebar();
+        if (!sidebar) return;
+        
+        createRefreshButton();
+        
+        // Delay initial scan
+        setTimeout(scanImages, 1000);
+        
+        state.initialized = true;
+    }
 
-    // Initial setup
-    initializeScript();
+    // Initial setup with delay
+    setTimeout(initializeScript, 500);
 })();
