@@ -179,4 +179,5 @@
 
     // Initial setup with delay
     setTimeout(initializeScript, 500);
+    setupObserver();
 })();
