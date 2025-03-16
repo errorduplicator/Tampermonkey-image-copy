@@ -102,6 +102,67 @@
             copyButton.textContent = 'Copy Selected';
             copyButton.style.width = '100%';
             copyButton.style.margin = '10px 0';
+            copyButton.addEventListener('click', () => {
+                const selectedImages = [];
+                const checkboxes = state.sidebar.querySelectorAll('input[type="checkbox"]:checked');
+                checkboxes.forEach(checkbox => {
+                    const img = checkbox.nextElementSibling;
+                    selectedImages.push(img);
+                });
+
+                if (selectedImages.length > 0) {
+                    const container = document.createElement('div');
+                    selectedImages.forEach(img => {
+                        const imgClone = img.cloneNode();
+                        container.appendChild(imgClone);
+                    });
+
+                    document.body.appendChild(container);
+                    const range = document.createRange();
+                    range.selectNodeContents(container);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+
+                    try {
+                        document.execCommand('copy');
+                        const notification = document.createElement('div');
+                        notification.textContent = 'Selected images copied to clipboard!';
+                        notification.style.position = 'fixed';
+                        notification.style.bottom = '10px';
+                        notification.style.right = '10px';
+                        notification.style.backgroundColor = 'green';
+                        notification.style.color = 'white';
+                        notification.style.padding = '10px';
+                        notification.style.borderRadius = '5px';
+                        notification.style.zIndex = '10002';
+                        document.body.appendChild(notification);
+                        setTimeout(() => {
+                            document.body.removeChild(notification);
+                        }, 3000);
+                    } catch (err) {
+                        console.error('Failed to copy images: ', err);
+                        const notification = document.createElement('div');
+                        notification.textContent = 'Failed to copy images.';
+                        notification.style.position = 'fixed';
+                        notification.style.bottom = '10px';
+                        notification.style.right = '10px';
+                        notification.style.backgroundColor = 'red';
+                        notification.style.color = 'white';
+                        notification.style.padding = '10px';
+                        notification.style.borderRadius = '5px';
+                        notification.style.zIndex = '10002';
+                        document.body.appendChild(notification);
+                        setTimeout(() => {
+                            document.body.removeChild(notification);
+                        }, 3000);
+                    }
+
+                    document.body.removeChild(container);
+                } else {
+                    alert('No images selected.');
+                }
+            });
             sidebar.appendChild(copyButton);
             
             state.sidebar = sidebar;
